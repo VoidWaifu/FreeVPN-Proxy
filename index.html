@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FreeVPN / Proxy</title>
+  <style>
+    :root{
+      --bg:#0f1320;
+      --card:#161a2b;
+      --accent:#ff66a3; /* gentle pink accent */
+      --accent2:#3aa0ff; /* soft blue accent */
+      --text:#e8ecf3;
+      --muted:#a9b3c7;
+      --ok:#52d17a;
+      --error:#ff6666;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:
+        radial-gradient(150vw 150vh at 10% 0%, rgba(255,102,163,0.12), transparent 60%),
+        radial-gradient(150vw 150vh at 90% 100%, rgba(58,160,255,0.12), transparent 60%),
+        var(--bg);
+      background-attachment: fixed;
+      color:var(--text);
+      font:16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, sans-serif;
+    }
+    header{
+      max-width:1200px;
+      margin:40px auto 16px;
+      padding:0 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:40px;height:40px;border-radius:10px;
+      background:linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 8px 24px rgba(255,102,163,0.25);
+    }
+    h1{
+      margin:0;
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+    .subtitle{color:var(--muted); font-size:0.95rem}
+    .lang-toggle{
+      display:flex; gap:8px; align-items:center;
+    }
+    .btn{
+      appearance:none; border:none; cursor:pointer;
+      background:linear-gradient(135deg, rgba(255,102,163,0.15), rgba(58,160,255,0.15));
+      color:var(--text);
+      padding:10px 14px; border-radius:10px;
+      backdrop-filter: blur(6px);
+      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-weight:600;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      background:linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 6px 16px rgba(58,160,255,0.25), 0 4px 12px rgba(255,102,163,0.15);
+    }
+    .btn.telegram{
+      background:linear-gradient(135deg, #2AABEE, #229ED9);
+      box-shadow: 0 6px 16px rgba(42,171,238,0.25);
+      text-decoration: none;
+    }
+    main{
+      max-width:1200px;
+      margin:0 auto 60px;
+      padding:0 20px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:20px;
+    }
+    @media(min-width:900px){
+      .grid{
+        grid-template-columns:1fr 1fr;
+        align-items: start;
+      }
+      .sticky-section {
+        position: sticky;
+        top: 20px;
+        align-self: start;
+      }
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:16px;
+      padding:18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+    }
+    .card h2{
+      margin:0 0 8px; font-size:1.25rem;
+    }
+    .meta{
+      display:flex; gap:10px; align-items:center; color:var(--muted); font-size:0.92rem;
+    }
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      background:rgba(82,209,122,0.12); color:#c7ffd8; border:1px solid rgba(82,209,122,0.25);
+      font-weight:600; font-size:0.9rem;
+    }
+    .badge.warp{
+      background:rgba(58,160,255,0.12); color:#cbe6ff; border:1px solid rgba(58,160,255,0.25);
+    }
+    .badge.tor{
+      background:rgba(255,102,163,0.12); color:#ffcbe6; border:1px solid rgba(255,102,163,0.25);
+    }
+    .badge.proxy{
+      background:rgba(255,193,7,0.12); color:#fff3c4; border:1px solid rgba(255,193,7,0.25);
+    }
+    .note{
+      margin-top:10px; color:var(--muted);
+    }
+    label{display:block; margin:12px 0 6px; color:var(--muted)}
+    textarea, input{
+      width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.12);
+      background:rgba(18,22,36,0.85); color:var(--text);
+      padding:12px 14px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:0.95rem;
+      outline:none;
+      box-shadow: inset 0 0 0 999px rgba(0,0,0,0); transition: box-shadow .15s ease, border-color .2s ease;
+      height: 44px; /* Fixed height for all inputs */
+    }
+    textarea:focus, input:focus{border-color:rgba(58,160,255,0.55); box-shadow: 0 0 0 4px rgba(58,160,255,0.18)}
+    textarea{min-height:120px; resize:vertical; height: auto;} /* Reset height for textarea */
+    .row{display:flex; gap:10px; margin-top:12px}
+    .row .btn{flex:1}
+    .field-pair{
+      display:grid; grid-template-columns:1fr; gap:10px;
+    }
+    @media(min-width:600px){
+      .field-pair{grid-template-columns:1fr 1fr}
+    }
+    .foot{
+      max-width:1200px; margin:24px auto 40px; padding:0 20px;
+      color:var(--muted); text-align:center; font-size:0.95rem;
+    }
+    .pill{
+      display:inline-block; padding:6px 10px; border-radius:999px;
+      background:rgba(58,160,255,0.12); border:1px solid rgba(58,160,255,0.25);
+      color:#cbe6ff; font-weight:600; margin-left:8px;
+    }
+    .small{font-size:0.9rem}
+    .success{color:var(--ok)}
+    .hidden{display:none}
+    
+    .telegram-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .status-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: var(--muted);
+      transition: background-color 0.3s ease;
+    }
+    
+    .status-indicator.online {
+      background-color: var(--ok);
+      box-shadow: 0 0 8px var(--ok);
+    }
+    
+    .status-indicator.offline {
+      background-color: var(--error);
+      box-shadow: 0 0 8px var(--error);
+    }
+    
+    .config-group {
+      margin-bottom: 24px;
+    }
+    
+    .config-item {
+      background: rgba(18,22,36,0.5);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .config-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .config-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .badges-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .support-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    
+    .support-section h3 {
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    
+    .support-address {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      background: rgba(18,22,36,0.5);
+      border-radius: 8px;
+      word-break: break-all;
+    }
+    
+    .copy-icon-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      height: 100%;
+    }
+    
+    .copy-icon-btn:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .input-with-copy {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .input-with-copy input {
+      flex: 1;
+      padding-right: 40px;
+    }
+    
+    .copy-icon-btn.absolute {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%) translateY(20px);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      padding: 10px 14px;
+      border-radius: 999px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      font-weight: 700;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      
+      .lang-toggle {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .telegram-link {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .status-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: auto;
+      }
+      
+      .config-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .badges-container {
+        width: 100%;
+      }
+      
+      .row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1 id="title">FreeVPN / Proxy</h1>
+        <div class="subtitle" id="subtitle">Бесплатный VPN и прокси без слежки</div>
+      </div>
+    </div>
+    <div class="lang-toggle">
+      <button class="btn" id="langButton" aria-label="Switch language">EN / RU</button>
+      <span class="pill" id="locationTag">IP: Germany</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="telegram-link">
+      <div>
+        <span id="telegramText">Наш телеграм канал</span>
+        <a href="https://t.me/super_fast_ultimate_warp_vpn" class="btn telegram" target="_blank" id="telegramButton">Присоединиться</a>
+      </div>
+      <div class="status-container">
+        <span id="statusText">Состояние:</span>
+        <div class="status-indicator" id="statusIndicator"></div>
+      </div>
+    </div>
+    
+    <div class="grid">
+      <!-- VPN Section -->
+      <section>
+        <div class="config-group">
+          <div class="card">
+            <h2 id="vlessTitle">VLESS VPN</h2>
+            
+            <!-- VLESS Default -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">VLESS Default</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="vless-default">Скопировать конфиг</button>
+            </div>
+            
+            <!-- VLESS WARP -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">VLESS WARP</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge warp">WARP</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="vless-warp">Скопировать конфиг</button>
+            </div>
+            
+            <!-- VLESS TOR -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">VLESS TOR</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge tor">TOR</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="vless-tor">Скопировать конфиг</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="config-group">
+          <div class="card">
+            <h2 id="trojanTitle">Trojan VPN</h2>
+            
+            <!-- Trojan Default -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">Trojan Default</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="trojan-default">Скопировать конфиг</button>
+            </div>
+            
+            <!-- Trojan WARP -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">Trojan WARP</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge warp">WARP</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="trojan-warp">Скопировать конфиг</button>
+            </div>
+            
+            <!-- Trojan TOR -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">Trojan TOR</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge tor">TOR</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="trojan-tor">Скопировать конфиг</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="config-group">
+          <div class="card">
+            <h2 id="vmessTitle">VMess VPN</h2>
+            
+            <!-- VMess Default -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">VMess Default</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="vmess-default">Скопировать конфиг</button>
+            </div>
+            
+            <!-- VMess WARP -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">VMess WARP</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge warp">WARP</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="vmess-warp">Скопировать конфиг</button>
+            </div>
+            
+            <!-- VMess TOR -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">VMess TOR</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge tor">TOR</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="vmess-tor">Скопировать конфиг</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="config-group">
+          <div class="card">
+            <h2 id="shadowsocksTitle">Shadowsocks VPN</h2>
+            
+            <!-- Shadowsocks Default -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">Shadowsocks Default</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="ss-default">Скопировать конфиг</button>
+            </div>
+            
+            <!-- Shadowsocks WARP -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">Shadowsocks WARP</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge warp">WARP</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="ss-warp">Скопировать конфиг</button>
+            </div>
+            
+            <!-- Shadowsocks TOR -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">Shadowsocks TOR</div>
+                <div class="badges-container">
+                  <span class="badge">VPN</span>
+                  <span class="badge tor">TOR</span>
+                </div>
+              </div>
+              <button class="btn primary copy-config" data-config="ss-tor">Скопировать конфиг</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Proxy Section (sticky on desktop) -->
+      <section class="sticky-section">
+        <div class="config-group">
+          <div class="card">
+            <h2 id="proxyTitle">SOCKS5 / HTTP Прокси</h2>
+            
+            <!-- Proxy Default -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">SOCKS5/HTTP Default</div>
+                <div class="badges-container">
+                  <span class="badge proxy">PROXY</span>
+                </div>
+              </div>
+              
+              <div class="field-pair">
+                <div class="input-with-copy">
+                  <label for="proxy-default-host" data-i18n="host">Хост</label>
+                  <input id="proxy-default-host" value="144.31.205.245" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-default-host">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="input-with-copy">
+                  <label for="proxy-default-port" data-i18n="port">Порт</label>
+                  <input id="proxy-default-port" value="22579" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-default-port">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="field-pair">
+                <div class="input-with-copy">
+                  <label for="proxy-default-login" data-i18n="login">Логин</label>
+                  <input id="proxy-default-login" value="Dm9ac2y21" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-default-login">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="input-with-copy">
+                  <label for="proxy-default-password" data-i18n="password">Пароль</label>
+                  <input id="proxy-default-password" value="7wLu57OZFE" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-default-password">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Proxy WARP -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">SOCKS5/HTTP WARP</div>
+                <div class="badges-container">
+                  <span class="badge proxy">PROXY</span>
+                  <span class="badge warp">WARP</span>
+                </div>
+              </div>
+              
+              <div class="field-pair">
+                <div class="input-with-copy">
+                  <label for="proxy-warp-host" data-i18n="host">Хост</label>
+                  <input id="proxy-warp-host" value="144.31.205.245" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-warp-host">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="input-with-copy">
+                  <label for="proxy-warp-port" data-i18n="port">Порт</label>
+                  <input id="proxy-warp-port" value="22267" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-warp-port">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="field-pair">
+                <div class="input-with-copy">
+                  <label for="proxy-warp-login" data-i18n="login">Логин</label>
+                  <input id="proxy-warp-login" value="1lT9bhq2qx" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-warp-login">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="input-with-copy">
+                  <label for="proxy-warp-password" data-i18n="password">Пароль</label>
+                  <input id="proxy-warp-password" value="P49AR1OaC7" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-warp-password">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Proxy TOR -->
+            <div class="config-item">
+              <div class="config-header">
+                <div class="config-title">SOCKS5/HTTP TOR</div>
+                <div class="badges-container">
+                  <span class="badge proxy">PROXY</span>
+                  <span class="badge tor">TOR</span>
+                </div>
+              </div>
+              
+              <div class="field-pair">
+                <div class="input-with-copy">
+                  <label for="proxy-tor-host" data-i18n="host">Хост</label>
+                  <input id="proxy-tor-host" value="144.31.205.245" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-tor-host">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="input-with-copy">
+                  <label for="proxy-tor-port" data-i18n="port">Порт</label>
+                  <input id="proxy-tor-port" value="24811" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-tor-port">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="field-pair">
+                <div class="input-with-copy">
+                  <label for="proxy-tor-login" data-i18n="login">Логин</label>
+                  <input id="proxy-tor-login" value="nIo3sS5VQC" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-tor-login">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div class="input-with-copy">
+                  <label for="proxy-tor-password" data-i18n="password">Пароль</label>
+                  <input id="proxy-tor-password" value="X0GOI57476" readonly />
+                  <button class="copy-icon-btn absolute" data-copy="proxy-tor-password">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="foot">
+    <p id="footText">
+      Мы ценим приватность: сервис предоставляется «как есть», без логирования трафика или личных данных.
+    </p>
+    <p class="small" id="footSmall">
+      Совместимость зависит от вашего клиента и сети. Используйте по назначению и соблюдайте законы вашей страны.
+    </p>
+    
+    <div class="support-section">
+      <h3 id="supportTitle">Поддержать нас</h3>
+      <div class="support-address">BTC: bc1qfakde9sqmvedq2ws45dxfjlyeefuxpha9wczg9</div>
+      <div class="support-address">ETH: 0xaf3c72d5EcF1042E95102CA7CeBde98d34Dc86FD</div>
+      <div class="support-address">TON: UQAE9beLjwm2j_Ye32Ruqc1-kksrDSMLqr9ceqyrXRR73e9s</div>
+    </div>
+  </div>
+
+  <script>
+    // Content for RU and EN
+    const i18n = {
+      ru: {
+        title: "FreeVPN / Proxy",
+        subtitle: "Бесплатный VPN и прокси без слежки",
+        vlessTitle: "VLESS VPN",
+        trojanTitle: "Trojan VPN",
+        vmessTitle: "VMess VPN",
+        shadowsocksTitle: "Shadowsocks VPN",
+        proxyTitle: "SOCKS5 / HTTP Прокси",
+        telegramText: "Наш телеграм канал",
+        telegramButton: "Присоединиться",
+        statusText: "Состояние:",
+        copyBtn: "Скопировать конфиг",
+        footText: "Мы ценим приватность: сервис предоставляется «как есть», без логирования трафика или личных данных.",
+        footSmall: "Совместимость зависит от вашего клиента и сети. Используйте по назначению и соблюдайте законы вашей страны.",
+        supportTitle: "Поддержать нас",
+        locationTag: "IP: Germany",
+        langButton: "EN / RU",
+        hostLabel: "Хост",
+        portLabel: "Порт",
+        loginLabel: "Логин",
+        passwordLabel: "Пароль"
+      },
+      en: {
+        title: "FreeVPN / Proxy",
+        subtitle: "Free VPN and proxies with no tracking",
+        vlessTitle: "VLESS VPN",
+        trojanTitle: "Trojan VPN",
+        vmessTitle: "VMess VPN",
+        shadowsocksTitle: "Shadowsocks VPN",
+        proxyTitle: "SOCKS5 / HTTP Proxy",
+        telegramText: "Our Telegram channel",
+        telegramButton: "Join",
+        statusText: "Status:",
+        copyBtn: "Copy config",
+        footText: "We value privacy: service is provided as-is, with no traffic or personal data logging.",
+        footSmall: "Compatibility depends on your client and network. Use responsibly and obey local laws.",
+        supportTitle: "Support us",
+        locationTag: "IP: Germany",
+        langButton: "EN / RU",
+        hostLabel: "Host",
+        portLabel: "Port",
+        loginLabel: "Login",
+        passwordLabel: "Password"
+      }
+    };
+
+    // VPN configurations
+    const vpnConfigs = {
+      "vless-default": "vless://a3723f5b-7700-41cc-a9eb-1afd93d33ba4@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-Default",
+      "vless-warp": "vless://4b3e0f10-decc-45c2-8751-74b84d711e3f@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-WARP",
+      "vless-tor": "vless://a9fd2e4e-be3f-41d2-ad41-b82935fdcb4c@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F#FreeVPN%2FProxy-Vless-TOR",
+      "trojan-default": "trojan://YfdUxhu3O9@144.31.205.245:8443/?type=tcp&security=reality&pbk=KfK8j2vqqGv8K6r1YsWTNcDCaCqWIr9bmj86zxZTJkU&fp=chrome&sni=github.com&sid=0cd74bc0129d0497&spx=%2F#FreeVPN%2FProxy-Trojan-Default",
+      "trojan-warp": "trojan://pDVDc8UVod@144.31.205.245:8443/?type=tcp&security=reality&pbk=KfK8j2vqqGv8K6r1YsWTNcDCaCqWIr9bmj86zxZTJkU&fp=chrome&sni=github.com&sid=0cd74bc0129d0497&spx=%2F#FreeVPN%2FProxy-Trojan-WARP",
+      "trojan-tor": "trojan://SrghU9bu5V@144.31.205.245:8443/?type=tcp&security=reality&pbk=KfK8j2vqqGv8K6r1YsWTNcDCaCqWIr9bmj86zxZTJkU&fp=chrome&sni=github.com&sid=0cd74bc0129d0497&spx=%2F#FreeVPN%2FProxy-Trojan-TOR",
+      "vmess-default": "vmess://ewogICJ2IjogIjIiLAogICJpZCI6ICJhMmNjMDk0Mi1mOTAwLTQ5MDMtYWRlNi1iODI1MmUzOGY4NmIiLAogICJhZGQiOiAiMTQ0LjMxLjIwNS4yNDUiLAogICJwb3J0IjogIjM4Nzk1IiwKICAiYWlkIjogIjAiLAogICJuZXQiOiAidGNwIiwKICAidHlwZSI6ICJub25lIiwKICAiaG9zdCI6ICIiLAogICJwYXRoIjogIiIsCiAgInRscyI6ICIiLAogICJzbmkiOiAiIiwKICAiYWxwbiI6ICIiLAogICJmdyI6ICIiLAogICJwcyI6ICJGcmVlVlBOL1Byb3h5LVZtZXNzLURlZmF1bHQiCn0=",
+      "vmess-warp": "vmess://ewogICJ2IjogIjIiLAogICJpZCI6ICI1Zjk5M2U3MC1lZDYyLTQzNmQtODY2YS01MWU4Y2RiYTM4OGYiLAogICJhZGQiOiAiMTQ0LjMxLjIwNS4yNDUiLAogICJwb3J0IjogIjM4Nzk1IiwKICAiYWlkIjogIjAiLAogICJuZXQiOiAidGNwIiwKICAidHlwZSI6ICJub25lIiwKICAiaG9zdCI6ICIiLAogICJwYXRoIjogIiIsCiAgInRscyI6ICIiLAogICJzbmkiOiAiIiwKICAiYWxwbiI6ICIiLAogICJmdyI6ICIiLAogICJwcyI6ICJGcmVlVlBOL1Byb3h5LVZtZXNzLVdBUlAiCn0=",
+      "vmess-tor": "vmess://ewogICJ2IjogIjIiLAogICJpZCI6ICIzODQwOTI5My1hOTQzLTRjODQtOTk2My0yZmQ4MzljY2Y2ZTgiLAogICJhZGQiOiAiMTQ0LjMxLjIwNS4yNDUiLAogICJwb3J0IjogIjM4Nzk1IiwKICAiYWlkIjogIjAiLAogICJuZXQiOiAidGNwIiwKICAidHlwZSI6ICJub25lIiwKICAiaG9zdCI6ICIiLAogICJwYXRoIjogIiIsCiAgInRscyI6ICIiLAogICJzbmkiOiAiIiwKICAiYWxwbiI6ICIiLAogICJmdyI6ICIiLAogICJwcyI6ICJGcmVlVlBOL1Byb3h5LVZtZXNzLVRPUiIKfQ==",
+      "ss-default": "ss://MjAyMi1ibGFrZTMtYWVzLTI1Ni1nY206SFFwcXZwemxSYkxSVnpOb2dHeWhQZ3RHcnZIbFpyTmVWT1dNUGlDaVBxdz06SU5Lc2hyWDRHNDdxMkFVZW04Uks2VFR6T3AvaWdHWnZCNzZuQTRPWDFBZz0@144.31.205.245:18580/?type=tcp#FreeVPN%2FProxy-Shadowsocks-Default",
+      "ss-warp": "ss://MjAyMi1ibGFrZTMtYWVzLTI1Ni1nY206SFFwcXZwemxSYkxSVnpOb2dHeWhQZ3RHcnZIbFpyTmVWT1dNUGlDaVBxdz06TmlCQTFhQmVJT2tXSllNaDIrWHI0b2FPRnpiUW1udDNhN0E5T09aSkhNcz0@144.31.205.245:18580/?type=tcp#FreeVPN%2FProxy-Shadowsocks-WARP",
+      "ss-tor": "ss://MjAyMi1ibGFrZTMtYWVzLTI1Ni1nY206SFFwcXZwemxSYkxSVnpOb2dHeWhQZ3RHcnZIbFpyTmVWT1dNUGlDaVBxdz06TlJZT2JRbGdzNDFqZHZZalZFTXl1T3ZQV0NreFRYc2hObVdqWVRnOVNGdz0@144.31.205.245:18580/?type=tcp#FreeVPN%2FProxy-Shadowsocks-TOR"
+    };
+
+    let currentLang = 'ru';
+
+    const el = id => document.getElementById(id);
+
+    function applyLang(lang){
+      const t = i18n[lang];
+      currentLang = lang;
+
+      el('title').textContent = t.title;
+      el('subtitle').textContent = t.subtitle;
+      el('vlessTitle').textContent = t.vlessTitle;
+      el('trojanTitle').textContent = t.trojanTitle;
+      el('vmessTitle').textContent = t.vmessTitle;
+      el('shadowsocksTitle').textContent = t.shadowsocksTitle;
+      el('proxyTitle').textContent = t.proxyTitle;
+      el('telegramText').textContent = t.telegramText;
+      el('telegramButton').textContent = t.telegramButton;
+      el('statusText').textContent = t.statusText;
+      el('supportTitle').textContent = t.supportTitle;
+      
+      // Update copy buttons text
+      document.querySelectorAll('.copy-config').forEach(btn => {
+        btn.textContent = t.copyBtn;
+      });
+
+      // Update proxy field labels
+      document.querySelectorAll('[data-i18n="host"]').forEach(el => {
+        el.textContent = t.hostLabel;
+      });
+      document.querySelectorAll('[data-i18n="port"]').forEach(el => {
+        el.textContent = t.portLabel;
+      });
+      document.querySelectorAll('[data-i18n="login"]').forEach(el => {
+        el.textContent = t.loginLabel;
+      });
+      document.querySelectorAll('[data-i18n="password"]').forEach(el => {
+        el.textContent = t.passwordLabel;
+      });
+
+      el('footText').textContent = t.footText;
+      el('footSmall').textContent = t.footSmall;
+      el('locationTag').textContent = t.locationTag;
+      el('langButton').textContent = t.langButton;
+    }
+
+    // Server status check
+    async function checkServerStatus() {
+      const startTime = Date.now();
+      try {
+        // Try to connect to the server using HTTP request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const response = await fetch(`https://${window.location.hostname}`, {
+          method: 'HEAD',
+          mode: 'no-cors',
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        const latency = Date.now() - startTime;
+        return { online: true, latency };
+      } catch (error) {
+        return { online: false, latency: null };
+      }
+    }
+
+    function updateStatusIndicator(online) {
+      const indicator = document.getElementById('statusIndicator');
+      indicator.classList.remove('online', 'offline');
+      
+      if (online) {
+        indicator.classList.add('online');
+      } else {
+        indicator.classList.add('offline');
+      }
+    }
+
+    // Periodically check server status
+    async function updateServerStatus() {
+      const status = await checkServerStatus();
+      updateStatusIndicator(status.online);
+    }
+
+    // Copy helpers
+    async function copyText(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        toast("✔ Copied");
+      }catch(e){
+        toast("Copy failed");
+      }
+    }
+
+    function toast(msg){
+      let tip = document.querySelector('.toast');
+      if(!tip){
+        tip = document.createElement('div');
+        tip.className = 'toast';
+        document.body.appendChild(tip);
+      }
+      tip.textContent = msg;
+      tip.classList.add('show');
+      setTimeout(()=> tip.classList.remove('show'), 1200);
+    }
+
+    // Event bindings
+    el('langButton').addEventListener('click', ()=>{
+      applyLang(currentLang === 'ru' ? 'en' : 'ru');
+    });
+
+    // VPN config copy buttons
+    document.querySelectorAll('.copy-config').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const configKey = btn.getAttribute('data-config');
+        const config = vpnConfigs[configKey];
+        if (config) {
+          copyText(config);
+        }
+      });
+    });
+
+    // Proxy copy buttons
+    document.querySelectorAll('.copy-icon-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-copy');
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          copyText(targetElement.value);
+        }
+      });
+    });
+
+    // Initial content
+    applyLang('ru');
+    
+    // Initial status check
+    updateServerStatus();
+    
+    // Check status every 3 seconds
+    setInterval(updateServerStatus, 3000);
+  </script>
+</body>
+</html>
