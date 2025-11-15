@@ -347,6 +347,9 @@
   </style>
 </head>
 <body>
+  <!-- Server status configuration - change value to 1 for online, 2 for offline -->
+  <input type="hidden" id="serverStatusConfig" value="1">
+  
   <header>
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
@@ -791,7 +794,7 @@
     const vpnConfigs = {
       "vless-default": "vless://a3723f5b-7700-41cc-a9eb-1afd93d33ba4@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-Default",
       "vless-warp": "vless://4b3e0f10-decc-45c2-8751-74b84d711e3f@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-WARP",
-      "vless-tor": "vless://a9fd2e4e-be3f-41d2-ad41-b82935fdcb4c@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F#FreeVPN%2FProxy-Vless-TOR",
+      "vless-tor": "vless://a9fd2e4e-be3f-41d2-ad41-b82935fdcb4c@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-TOR",
       "trojan-default": "trojan://YfdUxhu3O9@144.31.205.245:8443/?type=tcp&security=reality&pbk=KfK8j2vqqGv8K6r1YsWTNcDCaCqWIr9bmj86zxZTJkU&fp=chrome&sni=github.com&sid=0cd74bc0129d0497&spx=%2F#FreeVPN%2FProxy-Trojan-Default",
       "trojan-warp": "trojan://pDVDc8UVod@144.31.205.245:8443/?type=tcp&security=reality&pbk=KfK8j2vqqGv8K6r1YsWTNcDCaCqWIr9bmj86zxZTJkU&fp=chrome&sni=github.com&sid=0cd74bc0129d0497&spx=%2F#FreeVPN%2FProxy-Trojan-WARP",
       "trojan-tor": "trojan://SrghU9bu5V@144.31.205.245:8443/?type=tcp&security=reality&pbk=KfK8j2vqqGv8K6r1YsWTNcDCaCqWIr9bmj86zxZTJkU&fp=chrome&sni=github.com&sid=0cd74bc0129d0497&spx=%2F#FreeVPN%2FProxy-Trojan-TOR",
@@ -848,26 +851,14 @@
       el('langButton').textContent = t.langButton;
     }
 
-    // Server status check
-    async function checkServerStatus() {
-      const startTime = Date.now();
-      try {
-        // Try to connect to the server using HTTP request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        
-        const response = await fetch(`https://${window.location.hostname}`, {
-          method: 'HEAD',
-          mode: 'no-cors',
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        const latency = Date.now() - startTime;
-        return { online: true, latency };
-      } catch (error) {
-        return { online: false, latency: null };
-      }
+    // Server status management from HTML configuration
+    function updateServerStatus() {
+      const statusConfig = document.getElementById('serverStatusConfig');
+      const statusValue = statusConfig ? statusConfig.value : '1';
+      
+      // 1 = online, 2 = offline
+      const isOnline = statusValue === '1';
+      updateStatusIndicator(isOnline);
     }
 
     function updateStatusIndicator(online) {
@@ -879,12 +870,6 @@
       } else {
         indicator.classList.add('offline');
       }
-    }
-
-    // Periodically check server status
-    async function updateServerStatus() {
-      const status = await checkServerStatus();
-      updateStatusIndicator(status.online);
     }
 
     // Copy helpers
@@ -941,9 +926,6 @@
     
     // Initial status check
     updateServerStatus();
-    
-    // Check status every 3 seconds
-    setInterval(updateServerStatus, 3000);
   </script>
 </body>
 </html>
