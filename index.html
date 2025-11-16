@@ -8,8 +8,8 @@
     :root{
       --bg:#0f1320;
       --card:#161a2b;
-      --accent:#ff66a3; /* gentle pink accent */
-      --accent2:#3aa0ff; /* soft blue accent */
+      --accent:#ff66a3;
+      --accent2:#3aa0ff;
       --text:#e8ecf3;
       --muted:#a9b3c7;
       --ok:#52d17a;
@@ -78,6 +78,11 @@
       box-shadow: 0 6px 16px rgba(42,171,238,0.25);
       text-decoration: none;
     }
+    .btn.instruction{
+      background:linear-gradient(135deg, #2AABEE, #229ED9);
+      box-shadow: 0 6px 16px rgba(42,171,238,0.25);
+      text-decoration: none;
+    }
     main{
       max-width:1200px;
       margin:0 auto 60px;
@@ -138,10 +143,10 @@
       font-size:0.95rem;
       outline:none;
       box-shadow: inset 0 0 0 999px rgba(0,0,0,0); transition: box-shadow .15s ease, border-color .2s ease;
-      height: 44px; /* Fixed height for all inputs */
+      height: 44px;
     }
     textarea:focus, input:focus{border-color:rgba(58,160,255,0.55); box-shadow: 0 0 0 4px rgba(58,160,255,0.18)}
-    textarea{min-height:120px; resize:vertical; height: auto;} /* Reset height for textarea */
+    textarea{min-height:120px; resize:vertical; height: auto;}
     .row{display:flex; gap:10px; margin-top:12px}
     .row .btn{flex:1}
     .field-pair{
@@ -305,6 +310,114 @@
       transform: translateX(-50%) translateY(0);
     }
     
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 19, 32, 0.85);
+      z-index: 10000;
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .modal.show {
+      opacity: 1;
+    }
+    
+    .modal-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0;
+    }
+    
+    .modal.show .modal-content {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+    
+    .modal-header {
+      padding: 20px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .close-modal:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .modal-body {
+      padding: 20px 24px 24px;
+    }
+    
+    .modal-section {
+      margin-bottom: 24px;
+    }
+    
+    .modal-section h3 {
+      margin-bottom: 12px;
+      color: var(--accent2);
+    }
+    
+    .recommendation {
+      background: rgba(58,160,255,0.12);
+      border: 1px solid rgba(58,160,255,0.25);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+    }
+    
+    .recommendation strong {
+      color: #cbe6ff;
+    }
+    
+    .app-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 12px 0;
+    }
+    
+    .app-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .app-list li:last-child {
+      border-bottom: none;
+    }
+    
     @media (max-width: 600px) {
       header {
         flex-direction: column;
@@ -343,12 +456,73 @@
       .row {
         flex-direction: column;
       }
+      
+      .modal-content {
+        width: 95%;
+        max-height: 85vh;
+      }
+      
+      .modal-header {
+        padding: 16px 20px 0;
+      }
+      
+      .modal-body {
+        padding: 16px 20px 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- Server status configuration - change value to 1 for online, 2 for offline -->
   <input type="hidden" id="serverStatusConfig" value="1">
+  
+  <div class="modal" id="instructionModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Инструкция по использованию VPN</h3>
+        <button class="close-modal" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-section">
+          <h3 id="instructionSubtitle">Для использования VPN необходимо установить совместимое приложение</h3>
+          <div class="recommendation">
+            <p id="recommendationText"><strong>Рекомендация:</strong> Для доступа в интернет по умолчанию лучше использовать <strong>VLESS WARP</strong></p>
+          </div>
+        </div>
+        
+        <div class="modal-section">
+          <h3 id="windowsTitle">Windows</h3>
+          <ul class="app-list">
+            <li>NekoBox</li>
+            <li>Hiddify</li>
+            <li>v2RayTun</li>
+          </ul>
+        </div>
+        
+        <div class="modal-section">
+          <h3 id="androidTitle">Android</h3>
+          <ul class="app-list">
+            <li>Hiddify</li>
+            <li>V2BOX</li>
+            <li>v2RayTun</li>
+          </ul>
+        </div>
+        
+        <div class="modal-section">
+          <h3 id="iosTitle">iOS</h3>
+          <ul class="app-list">
+            <li>Hiddify</li>
+            <li>V2BOX</li>
+            <li>v2RayTun</li>
+          </ul>
+        </div>
+        
+        <div class="modal-section">
+          <h3 id="usageTitle">Использование</h3>
+          <p id="usageText">После установки приложения скопируйте конфигурацию VPN, импортируйте её в приложение и активируйте подключение.</p>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <header>
     <div class="brand">
@@ -359,6 +533,7 @@
       </div>
     </div>
     <div class="lang-toggle">
+      <button class="btn instruction" id="instructionButton">Инструкция</button>
       <button class="btn" id="langButton" aria-label="Switch language">EN / RU</button>
       <span class="pill" id="locationTag">IP: Germany</span>
     </div>
@@ -377,13 +552,11 @@
     </div>
     
     <div class="grid">
-      <!-- VPN Section -->
       <section>
         <div class="config-group">
           <div class="card">
             <h2 id="vlessTitle">VLESS VPN</h2>
             
-            <!-- VLESS Default -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">VLESS Default</div>
@@ -394,7 +567,6 @@
               <button class="btn primary copy-config" data-config="vless-default">Скопировать конфиг</button>
             </div>
             
-            <!-- VLESS WARP -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">VLESS WARP</div>
@@ -406,7 +578,6 @@
               <button class="btn primary copy-config" data-config="vless-warp">Скопировать конфиг</button>
             </div>
             
-            <!-- VLESS TOR -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">VLESS TOR</div>
@@ -424,7 +595,6 @@
           <div class="card">
             <h2 id="trojanTitle">Trojan VPN</h2>
             
-            <!-- Trojan Default -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">Trojan Default</div>
@@ -435,7 +605,6 @@
               <button class="btn primary copy-config" data-config="trojan-default">Скопировать конфиг</button>
             </div>
             
-            <!-- Trojan WARP -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">Trojan WARP</div>
@@ -447,7 +616,6 @@
               <button class="btn primary copy-config" data-config="trojan-warp">Скопировать конфиг</button>
             </div>
             
-            <!-- Trojan TOR -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">Trojan TOR</div>
@@ -465,7 +633,6 @@
           <div class="card">
             <h2 id="vmessTitle">VMess VPN</h2>
             
-            <!-- VMess Default -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">VMess Default</div>
@@ -476,7 +643,6 @@
               <button class="btn primary copy-config" data-config="vmess-default">Скопировать конфиг</button>
             </div>
             
-            <!-- VMess WARP -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">VMess WARP</div>
@@ -488,7 +654,6 @@
               <button class="btn primary copy-config" data-config="vmess-warp">Скопировать конфиг</button>
             </div>
             
-            <!-- VMess TOR -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">VMess TOR</div>
@@ -506,7 +671,6 @@
           <div class="card">
             <h2 id="shadowsocksTitle">Shadowsocks VPN</h2>
             
-            <!-- Shadowsocks Default -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">Shadowsocks Default</div>
@@ -517,7 +681,6 @@
               <button class="btn primary copy-config" data-config="ss-default">Скопировать конфиг</button>
             </div>
             
-            <!-- Shadowsocks WARP -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">Shadowsocks WARP</div>
@@ -529,7 +692,6 @@
               <button class="btn primary copy-config" data-config="ss-warp">Скопировать конфиг</button>
             </div>
             
-            <!-- Shadowsocks TOR -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">Shadowsocks TOR</div>
@@ -544,13 +706,11 @@
         </div>
       </section>
 
-      <!-- Proxy Section (sticky on desktop) -->
       <section class="sticky-section">
         <div class="config-group">
           <div class="card">
             <h2 id="proxyTitle">SOCKS5 / HTTP Прокси</h2>
             
-            <!-- Proxy Default -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">SOCKS5/HTTP Default</div>
@@ -585,7 +745,7 @@
               <div class="field-pair">
                 <div class="input-with-copy">
                   <label for="proxy-default-login" data-i18n="login">Логин</label>
-                  <input id="proxy-default-login" value="Dm9ac2y21" readonly />
+                  <input id="proxy-default-login" value="Dm9hac2y21" readonly />
                   <button class="copy-icon-btn absolute" data-copy="proxy-default-login">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -606,7 +766,6 @@
               </div>
             </div>
             
-            <!-- Proxy WARP -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">SOCKS5/HTTP WARP</div>
@@ -663,7 +822,6 @@
               </div>
             </div>
             
-            <!-- Proxy TOR -->
             <div class="config-item">
               <div class="config-header">
                 <div class="config-title">SOCKS5/HTTP TOR</div>
@@ -742,7 +900,6 @@
   </div>
 
   <script>
-    // Content for RU and EN
     const i18n = {
       ru: {
         title: "FreeVPN / Proxy",
@@ -764,7 +921,16 @@
         hostLabel: "Хост",
         portLabel: "Порт",
         loginLabel: "Логин",
-        passwordLabel: "Пароль"
+        passwordLabel: "Пароль",
+        instructionButton: "Инструкция",
+        modalTitle: "Инструкция по использованию VPN",
+        instructionSubtitle: "Для использования VPN необходимо установить совместимое приложение",
+        recommendationText: "Рекомендация: Для доступа в интернет по умолчанию лучше использовать VLESS WARP",
+        windowsTitle: "Windows",
+        androidTitle: "Android",
+        iosTitle: "iOS",
+        usageTitle: "Использование",
+        usageText: "После установки приложения скопируйте конфигурацию VPN, импортируйте её в приложение и активируйте подключение."
       },
       en: {
         title: "FreeVPN / Proxy",
@@ -786,11 +952,19 @@
         hostLabel: "Host",
         portLabel: "Port",
         loginLabel: "Login",
-        passwordLabel: "Password"
+        passwordLabel: "Password",
+        instructionButton: "Instructions",
+        modalTitle: "VPN Usage Instructions",
+        instructionSubtitle: "To use VPN you need to install a compatible application",
+        recommendationText: "Recommendation: For internet access by default it's better to use VLESS WARP",
+        windowsTitle: "Windows",
+        androidTitle: "Android",
+        iosTitle: "iOS",
+        usageTitle: "Usage",
+        usageText: "After installing the app, copy the VPN configuration, import it into the app, and activate the connection."
       }
     };
 
-    // VPN configurations
     const vpnConfigs = {
       "vless-default": "vless://a3723f5b-7700-41cc-a9eb-1afd93d33ba4@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-Default",
       "vless-warp": "vless://4b3e0f10-decc-45c2-8751-74b84d711e3f@144.31.205.245:443/?type=tcp&encryption=none&security=reality&pbk=PlKsSZp47N94yVCElRp_ssX4CdJ0_fSVA05e4uP6kjM&fp=chrome&sni=github.com&sid=18&spx=%2F&flow=xtls-rprx-vision#FreeVPN%2FProxy-Vless-WARP",
@@ -825,13 +999,20 @@
       el('telegramButton').textContent = t.telegramButton;
       el('statusText').textContent = t.statusText;
       el('supportTitle').textContent = t.supportTitle;
+      el('instructionButton').textContent = t.instructionButton;
+      el('modalTitle').textContent = t.modalTitle;
+      el('instructionSubtitle').textContent = t.instructionSubtitle;
+      el('recommendationText').innerHTML = `<strong>${t.recommendationText.split(':')[0]}:</strong> ${t.recommendationText.split(':')[1]}`;
+      el('windowsTitle').textContent = t.windowsTitle;
+      el('androidTitle').textContent = t.androidTitle;
+      el('iosTitle').textContent = t.iosTitle;
+      el('usageTitle').textContent = t.usageTitle;
+      el('usageText').textContent = t.usageText;
       
-      // Update copy buttons text
       document.querySelectorAll('.copy-config').forEach(btn => {
         btn.textContent = t.copyBtn;
       });
 
-      // Update proxy field labels
       document.querySelectorAll('[data-i18n="host"]').forEach(el => {
         el.textContent = t.hostLabel;
       });
@@ -851,7 +1032,6 @@
       el('langButton').textContent = t.langButton;
     }
 
-    // Server status management from HTML configuration
     function updateServerStatus() {
       const statusConfig = document.getElementById('serverStatusConfig');
       const statusValue = statusConfig ? statusConfig.value : '1';
@@ -872,7 +1052,26 @@
       }
     }
 
-    // Copy helpers
+    function openModal() {
+      const modal = document.getElementById('instructionModal');
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      
+      setTimeout(() => {
+        modal.classList.add('show');
+      }, 10);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('instructionModal');
+      modal.classList.remove('show');
+      
+      setTimeout(() => {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+      }, 300);
+    }
+
     async function copyText(text){
       try{
         await navigator.clipboard.writeText(text);
@@ -894,12 +1093,20 @@
       setTimeout(()=> tip.classList.remove('show'), 1200);
     }
 
-    // Event bindings
     el('langButton').addEventListener('click', ()=>{
       applyLang(currentLang === 'ru' ? 'en' : 'ru');
     });
 
-    // VPN config copy buttons
+    el('instructionButton').addEventListener('click', openModal);
+
+    el('closeModal').addEventListener('click', closeModal);
+    
+    document.getElementById('instructionModal').addEventListener('click', (e) => {
+      if (e.target.id === 'instructionModal') {
+        closeModal();
+      }
+    });
+
     document.querySelectorAll('.copy-config').forEach(btn => {
       btn.addEventListener('click', () => {
         const configKey = btn.getAttribute('data-config');
@@ -910,7 +1117,6 @@
       });
     });
 
-    // Proxy copy buttons
     document.querySelectorAll('.copy-icon-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('data-copy');
@@ -921,10 +1127,8 @@
       });
     });
 
-    // Initial content
     applyLang('ru');
     
-    // Initial status check
     updateServerStatus();
   </script>
 </body>
