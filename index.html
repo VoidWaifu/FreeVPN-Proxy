@@ -343,6 +343,13 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0;
+      /* Скрываем скроллбар */
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE и Edge */
+    }
+    
+    .modal-content::-webkit-scrollbar {
+      display: none; /* Chrome, Safari, Opera */
     }
     
     .modal.show .modal-content {
@@ -745,7 +752,7 @@
               <div class="field-pair">
                 <div class="input-with-copy">
                   <label for="proxy-default-login" data-i18n="login">Логин</label>
-                  <input id="proxy-default-login" value="Dm9hac2y21" readonly />
+                  <input id="proxy-default-login" value="Dm9aac2y21" readonly />
                   <button class="copy-icon-btn absolute" data-copy="proxy-default-login">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
