@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FreeVPN / Proxy</title>
+  <link rel="icon" type="image/png" href="../icon.png">
   <style>
     :root{
       --bg:#0f1320;
@@ -81,6 +82,11 @@
     .btn.instruction{
       background:linear-gradient(135deg, #2AABEE, #229ED9);
       box-shadow: 0 6px 16px rgba(42,171,238,0.25);
+      text-decoration: none;
+    }
+    .btn.website{
+      background:linear-gradient(135deg, #9c27b0, #673ab7);
+      box-shadow: 0 6px 16px rgba(156,39,176,0.25);
       text-decoration: none;
     }
     main{
@@ -343,13 +349,12 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0;
-      /* Скрываем скроллбар */
-      scrollbar-width: none; /* Firefox */
-      -ms-overflow-style: none; /* IE и Edge */
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
     
     .modal-content::-webkit-scrollbar {
-      display: none; /* Chrome, Safari, Opera */
+      display: none;
     }
     
     .modal.show .modal-content {
@@ -540,6 +545,7 @@
       </div>
     </div>
     <div class="lang-toggle">
+      <a href="https://voidwaifu.github.io/VoidWaifu/" class="btn website" target="_blank" id="websiteButton">Мой сайт</a>
       <button class="btn instruction" id="instructionButton">Инструкция</button>
       <button class="btn" id="langButton" aria-label="Switch language">EN / RU</button>
       <span class="pill" id="locationTag">IP: Germany</span>
@@ -899,7 +905,7 @@
     </p>
     
     <div class="support-section">
-      <h3 id="supportTitle">Поддержать нас</h3>
+      <h3 id="supportTitle">Поддержать меня</h3>
       <div class="support-address">BTC: bc1qfakde9sqmvedq2ws45dxfjlyeefuxpha9wczg9</div>
       <div class="support-address">ETH: 0xaf3c72d5EcF1042E95102CA7CeBde98d34Dc86FD</div>
       <div class="support-address">TON: UQAE9beLjwm2j_Ye32Ruqc1-kksrDSMLqr9ceqyrXRR73e9s</div>
@@ -922,7 +928,7 @@
         copyBtn: "Скопировать конфиг",
         footText: "Я ценю приватность: сервис предоставляется «как есть», без логирования трафика или личных данных.",
         footSmall: "Совместимость зависит от вашего клиента и сети. Используйте по назначению и соблюдайте законы вашей страны.",
-        supportTitle: "Поддержать нас",
+        supportTitle: "Поддержать меня",
         locationTag: "IP: Germany",
         langButton: "EN / RU",
         hostLabel: "Хост",
@@ -937,7 +943,8 @@
         androidTitle: "Android",
         iosTitle: "iOS",
         usageTitle: "Использование",
-        usageText: "После установки приложения скопируйте конфигурацию VPN, импортируйте её в приложение и активируйте подключение."
+        usageText: "После установки приложения скопируйте конфигурацию VPN, импортируйте её в приложение и активируйте подключение.",
+        websiteButton: "Мой сайт"
       },
       en: {
         title: "FreeVPN / Proxy",
@@ -953,7 +960,7 @@
         copyBtn: "Copy config",
         footText: "I value privacy: service is provided as-is, with no traffic or personal data logging.",
         footSmall: "Compatibility depends on your client and network. Use responsibly and obey local laws.",
-        supportTitle: "Support us",
+        supportTitle: "Support me",
         locationTag: "IP: Germany",
         langButton: "EN / RU",
         hostLabel: "Host",
@@ -968,7 +975,8 @@
         androidTitle: "Android",
         iosTitle: "iOS",
         usageTitle: "Usage",
-        usageText: "After installing the app, copy the VPN configuration, import it into the app, and activate the connection."
+        usageText: "After installing the app, copy the VPN configuration, import it into the app, and activate the connection.",
+        websiteButton: "My website"
       }
     };
 
@@ -1015,6 +1023,7 @@
       el('iosTitle').textContent = t.iosTitle;
       el('usageTitle').textContent = t.usageTitle;
       el('usageText').textContent = t.usageText;
+      el('websiteButton').textContent = t.websiteButton;
       
       document.querySelectorAll('.copy-config').forEach(btn => {
         btn.textContent = t.copyBtn;
@@ -1043,7 +1052,6 @@
       const statusConfig = document.getElementById('serverStatusConfig');
       const statusValue = statusConfig ? statusConfig.value : '1';
       
-      // 1 = online, 2 = offline
       const isOnline = statusValue === '1';
       updateStatusIndicator(isOnline);
     }
