@@ -55,7 +55,7 @@
     }
     .subtitle{color:var(--muted); font-size:0.95rem}
     .lang-toggle{
-      display:flex; gap:8px; align-items:center;
+      display:flex; gap:8px; align-items:center; flex-wrap: wrap;
     }
     .btn{
       appearance:none; border:none; cursor:pointer;
@@ -67,7 +67,11 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       font-weight:600;
       text-decoration: none;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      font-size: 14px;
     }
     .btn:hover{transform:translateY(-1px)}
     .btn.primary{
@@ -82,11 +86,6 @@
     .btn.instruction{
       background:linear-gradient(135deg, #2AABEE, #229ED9);
       box-shadow: 0 6px 16px rgba(42,171,238,0.25);
-      text-decoration: none;
-    }
-    .btn.website{
-      background:linear-gradient(135deg, #9c27b0, #673ab7);
-      box-shadow: 0 6px 16px rgba(156,39,176,0.25);
       text-decoration: none;
     }
     main{
@@ -434,18 +433,28 @@
       header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: 16px;
+      }
+      
+      .brand {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
       }
       
       .lang-toggle {
         width: 100%;
-        justify-content: space-between;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
       }
       
       .telegram-link {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
       }
       
       .status-container {
@@ -480,6 +489,11 @@
       
       .modal-body {
         padding: 16px 20px 20px;
+      }
+      
+      .btn.instruction {
+        flex: 1;
+        min-width: 120px;
       }
     }
   </style>
@@ -545,7 +559,7 @@
       </div>
     </div>
     <div class="lang-toggle">
-      <a href="https://voidwaifu.github.io/VoidWaifu/" class="btn website" target="_blank" id="websiteButton">Мой сайт</a>
+      <a href="https://voidwaifu.github.io/VoidWaifu/" class="btn instruction" target="_blank" id="websiteButton">Мой сайт</a>
       <button class="btn instruction" id="instructionButton">Инструкция</button>
       <button class="btn" id="langButton" aria-label="Switch language">EN / RU</button>
       <span class="pill" id="locationTag">IP: Germany</span>
